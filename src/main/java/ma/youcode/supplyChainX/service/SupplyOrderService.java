@@ -119,9 +119,9 @@ public class SupplyOrderService {
         existingOrder.setStatus(SupplyOrderStatus.valueOf(supplyOrder.getStatus()));
 
         if (SupplyOrderStatus.valueOf(supplyOrder.getStatus()) == SupplyOrderStatus.RECUE) {
-            for (SupplyOrderRawMaterial rmq : existingOrder.getSupplyOrderRawMaterials()) {
-                RawMaterial rawMaterial = rmq.getRawMaterial();
-                rawMaterial.setStock(rawMaterial.getStock() + rmq.getQuantity());
+            for (SupplyOrderRawMaterial supplyOrderRawMaterial : existingOrder.getSupplyOrderRawMaterials()) {
+                RawMaterial rawMaterial = supplyOrderRawMaterial.getRawMaterial();
+                rawMaterial.setStock(rawMaterial.getStock() + supplyOrderRawMaterial.getQuantity());
                 rawMaterialRepository.save(rawMaterial);
             }
         }

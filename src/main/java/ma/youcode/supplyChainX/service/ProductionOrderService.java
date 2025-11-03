@@ -1,7 +1,9 @@
 package ma.youcode.supplyChainX.service;
 
+import lombok.RequiredArgsConstructor;
 import ma.youcode.supplyChainX.dto.ProductionOrderRequest;
 import ma.youcode.supplyChainX.dto.ProductionOrderResponse;
+import ma.youcode.supplyChainX.mapper.ProductionOrderMapper;
 import ma.youcode.supplyChainX.model.BillOfMaterial;
 import ma.youcode.supplyChainX.model.Product;
 import ma.youcode.supplyChainX.model.ProductionOrder;
@@ -15,27 +17,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProductionOrderService {
 
     private final ProductionOrderRepository productionOrderRepository;
     private final BillOfMaterialRepository billOfMaterialRepository;
     private final RawMaterialRepository rawMaterialRepository;
     private final ProductRepository productRepository;
+    private final ProductionOrderMapper productionOrderMapper;
 
-    public ProductionOrderService(ProductionOrderRepository productionOrderRepository,
-                                  BillOfMaterialRepository billOfMaterialRepository,
-                                  RawMaterialRepository rawMaterialRepository,
-                                  ProductRepository productRepository) {
-        this.productionOrderRepository = productionOrderRepository;
-        this.billOfMaterialRepository = billOfMaterialRepository;
-        this.rawMaterialRepository = rawMaterialRepository;
-        this.productRepository = productRepository;
-    }
 
     public ProductionOrderResponse save(ProductionOrderRequest request) {
         Product product = productRepository.findById(request.getProductId())
@@ -82,37 +76,7 @@ public class ProductionOrderService {
         productionOrder.setEndDate(request.getEndDate());
 
         ProductionOrder savedOrder = productionOrderRepository.save(productionOrder);
-        return mapToResponseDTO(savedOrder);
-    }
-
-    private ProductionOrderResponse mapToResponseDTO(ProductionOrder order) {
-        ProductionOrderResponse dto = new ProductionOrderResponse();
-        dto.setId(order.getId());
-        dto.setStatus(order.getStatus().name());
-        dto.setQuantity(order.getQuantity());
-        dto.setStartDate(order.getStartDate());
-        dto.setEndDate(order.getEndDate());
-        dto.setProductId(order.getProduct().getId());
-        dto.setProductName(order.getProduct().getName());
-        dto.setProductCost(order.getProduct().getCost());
-
-        List<ProductionOrderResponse.BillOfMaterialResponse> bomResponses = order.getProduct()
-                .getBillOfMaterials()
-                .stream()
-                .map(bom -> {
-                    ProductionOrderResponse.BillOfMaterialResponse bomDto =
-                            new ProductionOrderResponse.BillOfMaterialResponse();
-                    bomDto.setRawMaterialId(bom.getRawMaterial().getId());
-                    bomDto.setRawMaterialName(bom.getRawMaterial().getName());
-                    bomDto.setQuantityPerUnit(bom.getQuantity());
-                    bomDto.setTotalQuantityNeeded(bom.getQuantity() * order.getQuantity());
-                    bomDto.setCurrentStock(bom.getRawMaterial().getStock());
-                    return bomDto;
-                })
-                .toList();
-
-        dto.setBillOfMaterials(bomResponses);
-        return dto;
+        return productionOrderMapper.mapToResponseDTO(savedOrder);
     }
 
 
