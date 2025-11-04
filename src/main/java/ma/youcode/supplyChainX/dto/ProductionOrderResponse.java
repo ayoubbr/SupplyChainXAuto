@@ -12,6 +12,7 @@ public class ProductionOrderResponse {
     private int quantity;
     private LocalDate startDate;
     private LocalDate endDate;
+    private double productionEstimatedTime;
 
     private Long productId;
     private String productName;

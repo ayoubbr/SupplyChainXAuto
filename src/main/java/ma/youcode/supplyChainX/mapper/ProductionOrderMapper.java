@@ -36,6 +36,8 @@ public class ProductionOrderMapper {
                 .toList();
 
         dto.setBillOfMaterials(bomResponses);
+        dto.setProductionEstimatedTime(order.getQuantity() * order.getProduct().getProductionTime());
+
         return dto;
     }
 }

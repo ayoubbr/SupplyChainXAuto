@@ -11,5 +11,6 @@ public class ProductionOrderRequest {
     private int quantity;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String status;
 }
 
