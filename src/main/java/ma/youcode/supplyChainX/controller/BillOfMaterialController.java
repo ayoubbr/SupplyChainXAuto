@@ -39,8 +39,8 @@ public class BillOfMaterialController {
     }
 
     @DeleteMapping("/{id}")
-    public BillOfMaterialResponse delete(@PathVariable Long id) {
-        return billOfMaterialService.delete(id);
+    public void delete(@PathVariable Long id) {
+        billOfMaterialService.delete(id);
     }
 
 }

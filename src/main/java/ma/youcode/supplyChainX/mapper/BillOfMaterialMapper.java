@@ -23,7 +23,8 @@ public class BillOfMaterialMapper {
         return response;
     }
 
-    public BillOfMaterial toEntity(BillOfMaterialRequest billOfMaterialRequest, RawMaterial rawMaterial, Product product) {
+    public BillOfMaterial toEntity(BillOfMaterialRequest billOfMaterialRequest,
+                                   RawMaterial rawMaterial, Product product) {
         BillOfMaterial billOfMaterial = new BillOfMaterial();
         billOfMaterial.setQuantity(billOfMaterialRequest.getQuantityPerProduct());
         billOfMaterial.setProduct(product);

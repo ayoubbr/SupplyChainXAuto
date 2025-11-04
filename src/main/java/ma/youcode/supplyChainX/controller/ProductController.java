@@ -1,9 +1,7 @@
 package ma.youcode.supplyChainX.controller;
 
-import lombok.Getter;
 import ma.youcode.supplyChainX.dto.ProductRequest;
 import ma.youcode.supplyChainX.dto.ProductResponse;
-import ma.youcode.supplyChainX.model.Product;
 import ma.youcode.supplyChainX.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,23 +23,23 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<ProductResponse> getAllProducts() {
         return productService.findAll();
     }
 
     @GetMapping("/{name}")
-    public Product getProductByName(@PathVariable String name) {
+    public ProductResponse getProductByName(@PathVariable String name) {
         return productService.findByName(name);
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return productService.update(product, id);
+    public ProductResponse updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
+        return productService.update(productRequest, id);
     }
 
     @DeleteMapping("/{id}")
-    public int deleteProduct(@PathVariable Long id) {
-        return productService.delete(id);
+    public void deleteProduct(@PathVariable Long id) {
+        productService.delete(id);
     }
 
 }

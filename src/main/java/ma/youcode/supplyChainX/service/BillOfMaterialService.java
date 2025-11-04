@@ -1,5 +1,6 @@
 package ma.youcode.supplyChainX.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import ma.youcode.supplyChainX.dto.BillOfMaterialRequest;
 import ma.youcode.supplyChainX.dto.BillOfMaterialResponse;
@@ -13,8 +14,8 @@ import ma.youcode.supplyChainX.repository.RawMaterialRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,113 +28,90 @@ public class BillOfMaterialService {
     private final RawMaterialRepository rawMaterialRepository;
 
     public BillOfMaterialResponse save(BillOfMaterialRequest billOfMaterialRequest) {
-        if (billOfMaterialRequest == null) {
-            throw new IllegalArgumentException("BillOfMaterial cannot be null");
-        }
-        if (billOfMaterialRequest.getProductId() == null) {
-            throw new IllegalArgumentException("BillOfMaterial must be associated with a Product");
-        }
-        if (billOfMaterialRequest.getRawMaterialId() == null) {
-            throw new IllegalArgumentException("BillOfMaterial must be associated with a Raw Material");
-        }
-        if (billOfMaterialRequest.getQuantityPerProduct() <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
-        }
+        validateRequest(billOfMaterialRequest);
 
-        BillOfMaterial byProductIdAndRawMaterialId = billOfMaterialRepository
-                .findByProductIdAndRawMaterialId(billOfMaterialRequest.getProductId(), billOfMaterialRequest.getRawMaterialId());
-
-        if (byProductIdAndRawMaterialId == null) {
-
-            Product product = productRepository.findById(billOfMaterialRequest.getProductId()).orElse(null);
-            RawMaterial rawMaterial = rawMaterialRepository.findById(billOfMaterialRequest.getRawMaterialId()).orElse(null);
-
-
-            BillOfMaterial billOfMaterial = billOfMaterialMapper.toEntity(billOfMaterialRequest, rawMaterial, product);
-            BillOfMaterial saved = billOfMaterialRepository.save(billOfMaterial);
-
-            return billOfMaterialMapper.mapBillOfMaterial(saved);
-        } else {
+        // Check duplicate
+        if (billOfMaterialRepository.findByProductIdAndRawMaterialId(billOfMaterialRequest.getProductId(),
+                billOfMaterialRequest.getRawMaterialId()) != null) {
             throw new IllegalArgumentException("A BillOfMaterial with the same Product and Raw Material already exists");
         }
+        Product product = productRepository.findById(billOfMaterialRequest.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found: " + billOfMaterialRequest.getProductId()));
+
+        RawMaterial rawMaterial = rawMaterialRepository.findById(billOfMaterialRequest.getRawMaterialId())
+                .orElseThrow(() -> new EntityNotFoundException("Raw material not found: " + billOfMaterialRequest.getRawMaterialId()));
+
+
+        BillOfMaterial bom = billOfMaterialMapper.toEntity(billOfMaterialRequest, rawMaterial, product);
+        BillOfMaterial saved = billOfMaterialRepository.save(bom);
+
+        return billOfMaterialMapper.mapBillOfMaterial(saved);
     }
 
-    public BillOfMaterialResponse update(BillOfMaterialRequest billOfMaterialRequest, Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
-        }
-        if (id <= 0) {
-            throw new IllegalArgumentException("ID must be greater than zero");
-        }
+    public BillOfMaterialResponse update(BillOfMaterialRequest request, Long id) {
+        requireValidId(id);
+        validateRequest(request);
 
-        BillOfMaterial existingBillOfMaterial = billOfMaterialRepository.findById(id).orElse(null);
-        if (existingBillOfMaterial == null) {
-            throw new IllegalArgumentException("BillOfMaterial with the given ID does not exist");
-        }
+        BillOfMaterial existing = billOfMaterialRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("BillOfMaterial not found with ID: " + id));
 
-        BillOfMaterial byProductIdAndRawMaterialId = billOfMaterialRepository
-                .findByProductIdAndRawMaterialId(billOfMaterialRequest.getProductId(), billOfMaterialRequest.getRawMaterialId());
+        BillOfMaterial duplicate = billOfMaterialRepository
+                .findByProductIdAndRawMaterialId(request.getProductId(), request.getRawMaterialId());
 
-        if (byProductIdAndRawMaterialId == null) {
-
-            if (productRepository.findById(billOfMaterialRequest.getProductId()).isPresent()) {
-                existingBillOfMaterial.setProduct(productRepository.findById(billOfMaterialRequest.getProductId()).get());
-            }
-
-            if (rawMaterialRepository.findById(billOfMaterialRequest.getRawMaterialId()).isPresent()) {
-                existingBillOfMaterial.setRawMaterial(rawMaterialRepository
-                        .findById(billOfMaterialRequest.getRawMaterialId()).get());
-            }
-
-            existingBillOfMaterial.setQuantity(billOfMaterialRequest.getQuantityPerProduct());
-            BillOfMaterial updated = billOfMaterialRepository.save(existingBillOfMaterial);
-            return billOfMaterialMapper.mapBillOfMaterial(updated);
-
-        } else {
+        // If a duplicate exists, and it’s not the same record, reject
+        if (duplicate != null && !duplicate.getId().equals(id)) {
             throw new IllegalArgumentException("A BillOfMaterial with the same Product and Raw Material already exists");
         }
+
+        // Update fields
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found: " + request.getProductId()));
+
+        RawMaterial rawMaterial = rawMaterialRepository.findById(request.getRawMaterialId())
+                .orElseThrow(() -> new EntityNotFoundException("Raw material not found: " + request.getRawMaterialId()));
+
+        existing.setProduct(product);
+        existing.setRawMaterial(rawMaterial);
+        existing.setQuantity(request.getQuantityPerProduct());
+
+        BillOfMaterial updated = billOfMaterialRepository.save(existing);
+        return billOfMaterialMapper.mapBillOfMaterial(updated);
     }
 
-    public BillOfMaterialResponse delete(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
-        }
-        if (id <= 0) {
-            throw new IllegalArgumentException("ID must be greater than zero");
-        }
+    public void delete(Long id) {
+        requireValidId(id);
 
-        BillOfMaterial existingBillOfMaterial = billOfMaterialRepository.findById(id).orElse(null);
-        if (existingBillOfMaterial != null) {
-            billOfMaterialRepository.deleteById(id);
-            return billOfMaterialMapper.mapBillOfMaterial(existingBillOfMaterial);
-        }
-        return null;
+        BillOfMaterial bom = billOfMaterialRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("BillOfMaterial not found: " + id));
+
+        billOfMaterialRepository.delete(bom);
     }
 
     public BillOfMaterialResponse getById(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
-        }
-        if (id <= 0) {
-            throw new IllegalArgumentException("ID must be greater than zero");
-        }
+        requireValidId(id);
 
-        BillOfMaterial billOfMaterial = billOfMaterialRepository.findById(id).orElse(null);
-        if (billOfMaterial != null) {
-            return billOfMaterialMapper.mapBillOfMaterial(billOfMaterial);
-        }
-        return null;
+        BillOfMaterial bom = billOfMaterialRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("BillOfMaterial not found: " + id));
+
+        return billOfMaterialMapper.mapBillOfMaterial(bom);
     }
 
     public List<BillOfMaterialResponse> getAll() {
-        List<BillOfMaterial> all = billOfMaterialRepository.findAll();
-        List<BillOfMaterialResponse> billOfMaterialResponses = new ArrayList<>();
-
-        for (BillOfMaterial billOfMaterial : all) {
-            BillOfMaterialResponse billOfMaterialResponse = billOfMaterialMapper.mapBillOfMaterial(billOfMaterial);
-            billOfMaterialResponses.add(billOfMaterialResponse);
-        }
-
-        return billOfMaterialResponses;
+        return billOfMaterialRepository.findAll().stream()
+                .map(billOfMaterialMapper::mapBillOfMaterial)
+                .collect(Collectors.toList());
     }
+
+    private void validateRequest(BillOfMaterialRequest request) {
+        if (request == null) throw new IllegalArgumentException("Request cannot be null");
+        if (request.getProductId() == null) throw new IllegalArgumentException("Product ID cannot be null");
+        if (request.getRawMaterialId() == null) throw new IllegalArgumentException("Raw Material ID cannot be null");
+        if (request.getQuantityPerProduct() <= 0)
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
+
+    private void requireValidId(Long id) {
+        if (id == null || id <= 0) throw new IllegalArgumentException("Invalid ID");
+    }
+
 }
