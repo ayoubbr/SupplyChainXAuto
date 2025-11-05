@@ -29,11 +29,6 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @ManyToOne
-    private Address address;
-
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Delivery delivery;
-
-    // Getters & Setters
 }

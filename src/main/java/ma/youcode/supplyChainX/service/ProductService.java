@@ -53,7 +53,6 @@ public class ProductService {
     public ProductResponse update(ProductRequest productRequest, Long id) {
         Product existingProduct = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-
         existingProduct.setName(productRequest.getName());
         existingProduct.setCost(productRequest.getCost());
         existingProduct.setStock(productRequest.getStock());
@@ -62,7 +61,8 @@ public class ProductService {
         if (productRequest.getBillOfMaterials() != null && !productRequest.getBillOfMaterials().isEmpty()) {
             existingProduct.getBillOfMaterials().clear();
             List<BillOfMaterial> updatedBoms = productRequest.getBillOfMaterials().stream().map(dto -> {
-                RawMaterial rm = rawMaterialRepository.findById(dto.getRawMaterialId()).orElseThrow(() -> new EntityNotFoundException("Raw material not found: " + dto.getRawMaterialId()));
+                RawMaterial rm = rawMaterialRepository.findById(dto.getRawMaterialId())
+                        .orElseThrow(() -> new EntityNotFoundException("Raw material not found: " + dto.getRawMaterialId()));
                 BillOfMaterial bom = new BillOfMaterial();
                 bom.setProduct(existingProduct);
                 bom.setRawMaterial(rm);
