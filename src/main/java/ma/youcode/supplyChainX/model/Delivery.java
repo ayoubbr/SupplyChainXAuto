@@ -32,7 +32,5 @@ public class Delivery {
 
     private LocalDate deliveryDate;
     private double cost;
-
-    // Getters & Setters
 }
 
