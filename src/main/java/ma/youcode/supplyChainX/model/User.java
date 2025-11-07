@@ -1,23 +1,32 @@
-package ma.youcode.supplyChainX.shared.model;
+package ma.youcode.supplyChainX.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import ma.youcode.supplyChainX.shared.enums.Role;
 
-@Data
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String firstName;
-    private String lastName;
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
+
+    private String firstName;
+    private String lastName;
 }
 

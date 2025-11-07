@@ -73,6 +73,11 @@ public class ProductionOrderService {
                 : existingOrder.getStatus()
         );
 
+        if (ProductionOrderStatus.valueOf(request.getStatus()).equals(ProductionOrderStatus.TERMINE)) {
+            newProduct.setStock(newProduct.getStock() + request.getQuantity());
+            productRepository.save(newProduct);
+        }
+
         ProductionOrder updated = productionOrderRepository.save(existingOrder);
 
         return productionOrderMapper.mapToResponseDTO(updated);
