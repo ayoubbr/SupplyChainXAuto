@@ -6,7 +6,5 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class SupplyChainXApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+
 }

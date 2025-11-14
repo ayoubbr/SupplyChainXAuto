@@ -29,6 +29,10 @@ public class Supplier {
     @OneToMany(mappedBy = "supplier")
     private List<SupplyOrder> supplyOrders;
 
+    public Supplier(String name) {
+        this.name = name;
+    }
+
     // Getters & Setters
 }
 

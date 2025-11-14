@@ -1,14 +1,10 @@
 package ma.youcode.supplyChainX.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 import ma.youcode.supplyChainX.model.BillOfMaterial;
 
 import java.util.List;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Setter
@@ -39,4 +35,11 @@ public class RawMaterial {
 
     @OneToMany(mappedBy = "rawMaterial")
     private List<SupplyOrderRawMaterial> supplyOrderRawMaterials;
+
+    public RawMaterial(String name, int stock, int stockMin, String unit) {
+        this.name = name;
+        this.stock = stock;
+        this.stockMin = stockMin;
+        this.unit = unit;
+    }
 }

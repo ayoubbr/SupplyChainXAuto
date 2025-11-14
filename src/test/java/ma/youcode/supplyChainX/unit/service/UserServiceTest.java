@@ -6,6 +6,7 @@ import ma.youcode.supplyChainX.dto.UserResponse;
 import ma.youcode.supplyChainX.mapper.UserMapper;
 import ma.youcode.supplyChainX.model.User;
 import ma.youcode.supplyChainX.repository.UserRepository;
+import ma.youcode.supplyChainX.service.UserService;
 import ma.youcode.supplyChainX.shared.enums.Role;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

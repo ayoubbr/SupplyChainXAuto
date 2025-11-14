@@ -1,8 +1,7 @@
-package ma.youcode.supplyChainX.integration;
+package ma.youcode.supplyChainX.integration.service;
 
 import ma.youcode.supplyChainX.dto.UserRequest;
 import ma.youcode.supplyChainX.dto.UserResponse;
-import ma.youcode.supplyChainX.model.User;
 import ma.youcode.supplyChainX.repository.UserRepository;
 import ma.youcode.supplyChainX.service.UserService;
 import ma.youcode.supplyChainX.shared.enums.Role;
