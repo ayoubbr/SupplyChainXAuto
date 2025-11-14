@@ -1,0 +1,16 @@
+# Dossier de build Maven
+target/
+
+# Dossiers et fichiers liés à Git
+.git
+.gitignore
+
+# Fichiers et dossiers des IDE
+.idea/
+*.iml
+.vscode/
+
+# Logs et fichiers temporaires
+*.log
+*.tmp
+*.swp

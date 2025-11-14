@@ -34,7 +34,6 @@ public class UserService {
         return userMapper.toResponse(saved);
     }
 
-
     public UserResponse updateUserRole(Long id, Role newRole) {
         if (newRole == null) {
             throw new IllegalArgumentException("Role cannot be null");
@@ -50,7 +49,8 @@ public class UserService {
     }
 
     public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         return userMapper.toResponse(user);
     }

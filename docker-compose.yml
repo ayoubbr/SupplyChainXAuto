@@ -6,17 +6,21 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: supplychainx_db
-      MYSQL_USER: springuser
-      MYSQL_PASSWORD: springpass
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - supplychainx_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin_ui
     restart: always
     depends_on:
@@ -30,8 +34,49 @@ services:
     networks:
       - supplychainx_network
 
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: supplychainx_backend
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/supplychainx_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    networks:
+      - supplychainx_network
+
+  sonarqube:
+    image: sonarqube:10.3-community
+    container_name: sonarqube
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_logs:/opt/sonarqube/logs
+      - sonar_extensions:/opt/sonarqube/extensions
+    networks:
+      - supplychainx_network
+
 volumes:
   mysql_data:
+  sonar_data:
+  sonar_logs:
+  sonar_extensions:
 
 networks:
   supplychainx_network:
+    driver: bridge

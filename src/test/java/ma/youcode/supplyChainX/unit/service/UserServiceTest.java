@@ -1,4 +1,4 @@
-package ma.youcode.supplyChainX.service;
+package ma.youcode.supplyChainX.unit.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import ma.youcode.supplyChainX.dto.UserRequest;
@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class UserServiceTest {
 
     @Mock
