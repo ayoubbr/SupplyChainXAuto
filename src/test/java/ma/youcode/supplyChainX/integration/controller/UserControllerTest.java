@@ -44,7 +44,6 @@ class UserControllerTest {
                 "ayoub",
                 "lastname",
                 Role.ADMIN);
-
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
